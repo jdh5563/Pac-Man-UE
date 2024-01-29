@@ -37,23 +37,23 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh)
 		level[0][col] = true;
 		level[numRows - 1][col] = true;
 
-		AStaticMeshActor* wall1 = (AStaticMeshActor*)GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, 0, 0), FRotator());
+		AStaticMeshActor* wall1 = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, 0, 0), FRotator());
 		wall1->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 
-		AStaticMeshActor* wall2 = (AStaticMeshActor*)GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows - 1) * 100, 0), FRotator());
+		AStaticMeshActor* wall2 = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows - 1) * 100, 0), FRotator());
 		wall2->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 	}
 
 	for (int row = 1; row < numRows - 1; row++) {
 		level[row][0] = true;
 
-		AStaticMeshActor* wall1 = (AStaticMeshActor*)GetWorld()->SpawnActor<AStaticMeshActor>(FVector(0, row * 100, 0), FRotator());
+		AStaticMeshActor* wall1 = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(0, row * 100, 0), FRotator());
 		wall1->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 
 		if (row > numRows / 2 - 3 && row < numRows / 2 + 1) {
 			level[row][numCols / 2 - 4] = true;
 
-			AStaticMeshActor* wall2 = (AStaticMeshActor*)GetWorld()->SpawnActor<AStaticMeshActor>(FVector((numCols / 2 - 4) * 100, row * 100, 0), FRotator());
+			AStaticMeshActor* wall2 = GetWorld()->SpawnActor<AStaticMeshActor>(FVector((numCols / 2 - 4) * 100, row * 100, 0), FRotator());
 			wall2->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		}
 	}
@@ -62,13 +62,13 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh)
 	for (int col = numCols / 2 - 1; col > numCols / 2 - 5; col--) {
 		level[numRows / 2 + 1][col] = true;
 
-		AStaticMeshActor* wall1 = (AStaticMeshActor*)GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows / 2 + 1) * 100, 0), FRotator());
+		AStaticMeshActor* wall1 = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows / 2 + 1) * 100, 0), FRotator());
 		wall1->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 
 		if (col != numCols / 2 - 1) {
 			level[numRows / 2 - 3][col] = true;
 
-			AStaticMeshActor* wall2 = (AStaticMeshActor*)GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows / 2 - 3) * 100, 0), FRotator());
+			AStaticMeshActor* wall2 = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows / 2 - 3) * 100, 0), FRotator());
 			wall2->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		}
 	}
@@ -78,6 +78,8 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh)
 		// Design 2: Select X random points on the level. Cubes randomly wander for Y spaces.
 		// Design 3: Place X random points in the level. Manhattan pathfind between each to create paths.
 		// Design 4: Choose X lanes to cross horizontally and Y lanes to cross vertically. Consider trying to block off some intersections
+
+
 
 	// Search level for any cell with 3 surrounding walls
 		// Dig in the direction of the wall opposite the opening until an edge or opening is found.
@@ -90,7 +92,7 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh)
 			level[row][col] = level[row][numCols - col - 1];
 
 			if (level[row][col]) {
-				AStaticMeshActor* wall = (AStaticMeshActor*)GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, row * 100, 0), FRotator());
+				AStaticMeshActor* wall = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, row * 100, 0), FRotator());
 				wall->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 			}
 		}
