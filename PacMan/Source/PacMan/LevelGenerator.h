@@ -25,7 +25,7 @@ public:
 
 private:
 	UFUNCTION(BlueprintCallable)
-	void GenerateLevel(UStaticMesh* cubeMesh);
+	void GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
 
 	const static int numRows = 31;
 	const static int numCols = 28;
