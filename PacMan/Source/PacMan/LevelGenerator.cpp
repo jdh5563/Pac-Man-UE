@@ -34,31 +34,31 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 	// Spawn walls around entire edge. Walls have X% chance to move inward by 1-3 pellets and span 5-10 pellets.
 	// Iteration #1: Just walls around the edge
 	for (int col = 0; col < numCols / 2; col++) {
-		level[0][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, 0, 0), FRotator());
+		level[0][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, 0, 200), FRotator());
 		level[0][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		level[0][col]->SetActorLabel(TEXT("Wall"));
 
 		level[1][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-		level[1][col]->SetActorLocation(FVector(col * 100, 100, 0));
+		level[1][col]->SetActorLocation(FVector(col * 100, 100, 200));
 
-		level[numRows - 1][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows - 1) * 100, 0), FRotator());
+		level[numRows - 1][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows - 1) * 100, 200), FRotator());
 		level[numRows - 1][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		level[numRows - 1][col]->SetActorLabel(TEXT("Wall"));
 
 		level[numRows - 2][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-		level[numRows - 2][col]->SetActorLocation(FVector(col * 100, (numRows - 2) * 100, 0));
+		level[numRows - 2][col]->SetActorLocation(FVector(col * 100, (numRows - 2) * 100, 200));
 	}
 
 	for (int row = 1; row < numRows - 1; row++) {
-		level[row][0] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(0, row * 100, 0), FRotator());
+		level[row][0] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(0, row * 100, 200), FRotator());
 		level[row][0]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		level[row][0]->SetActorLabel(TEXT("Wall"));
 
 		level[row][1] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-		level[row][1]->SetActorLocation(FVector(100, row * 100, 0));
+		level[row][1]->SetActorLocation(FVector(100, row * 100, 200));
 
 		if (row > numRows / 2 - 3 && row < numRows / 2 + 1) {
-			level[row][numCols / 2 - 4] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector((numCols / 2 - 4) * 100, row * 100, 0), FRotator());
+			level[row][numCols / 2 - 4] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector((numCols / 2 - 4) * 100, row * 100, 200), FRotator());
 			level[row][numCols / 2 - 4]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 			level[row][numCols / 2 - 4]->SetActorLabel(TEXT("Wall"));
 		}
@@ -66,12 +66,12 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 
 	// Spawn center area row = 14 col = 13
 	for (int col = numCols / 2 - 1; col > numCols / 2 - 5; col--) {
-		level[numRows / 2 + 1][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows / 2 + 1) * 100, 0), FRotator());
+		level[numRows / 2 + 1][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows / 2 + 1) * 100, 200), FRotator());
 		level[numRows / 2 + 1][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		level[numRows / 2 + 1][col]->SetActorLabel(TEXT("Wall"));
 
 		if (col != numCols / 2 - 1) {
-			level[numRows / 2 - 3][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows / 2 - 3) * 100, 0), FRotator());
+			level[numRows / 2 - 3][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows / 2 - 3) * 100, 200), FRotator());
 			level[numRows / 2 - 3][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 			level[numRows / 2 - 3][col]->SetActorLabel(TEXT("Wall"));
 		}
@@ -88,7 +88,36 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 			// Paths branch out randomly from the edge path and wander Y times.
 			// From each path's endpoint, extend the path out vertically and horizontally.
 			// All other spaces are walls.
+	const int numBranches = 7;
+	int wanderDistance = 4;
+	int numWanders = 4;
 
+	FVector endPoints[numBranches];
+
+	for (int i = 0; i < numBranches; i++) {
+		FVector randomPoint;
+		if (FMath::RandBool()) {
+			randomPoint = FVector(FMath::RandRange(2, numRows - 3), 2, 0);
+			for (int j = 0; j < wanderDistance; j++) {
+				level[(int)randomPoint.X][(int)randomPoint.Y + j] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+				level[(int)randomPoint.X][(int)randomPoint.Y + j]->SetActorLocation(FVector((randomPoint.Y + j) * 100, randomPoint.X * 100, 200));
+			}
+		}
+		else if (FMath::RandBool()) {
+			randomPoint = FVector(2, FMath::RandRange(2, numCols / 2 - 3), 0);
+			for (int j = 0; j < wanderDistance; j++) {
+				level[(int)randomPoint.X + j][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+				level[(int)randomPoint.X + j][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, (randomPoint.X + j) * 100, 200));
+			}
+		}
+		else {
+			randomPoint = FVector(numRows - 3, FMath::RandRange(2, numCols / 2 - 3), 0);
+			for (int j = 0; j < wanderDistance; j++) {
+				level[(int)randomPoint.X - j][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+				level[(int)randomPoint.X - j][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, (randomPoint.X - j) * 100, 200));
+			}
+		}
+	}
 
 
 	// Search level for any cell with 3 surrounding walls
@@ -103,12 +132,12 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 
 			if (level[row][numCols - col - 1] != nullptr) {
 				if (level[row][numCols - col - 1]->GetActorLabel() == TEXT("Wall")) {
-					level[row][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, row * 100, 0), FRotator());
+					level[row][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, row * 100, 200), FRotator());
 					level[row][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 				}
 				else {
 					level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-					level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 0));
+					level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
 				}
 			}
 		}
