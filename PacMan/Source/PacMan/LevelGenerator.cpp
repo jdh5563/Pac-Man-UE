@@ -78,6 +78,12 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 		}
 	}
 
+	// Spawn center pellet line = 14 col = 13
+	for (int col = numCols / 2 - 1; col > 1; col--) {
+		level[numRows / 2 - 4][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+		level[numRows / 2 - 4][col]->SetActorLocation(FVector(col * 100, (numRows / 2 - 4) * 100, 200));
+	}
+
 	// Spawn inner walls
 		// Design 1: Spawn X walls that are based on templates. They are allowed to overlap.
 		// Design 2: Select X random points on the level. Cubes randomly wander for Y spaces.
@@ -90,16 +96,18 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 			// From each path's endpoint, extend the path out vertically and horizontally.
 			// All other spaces are walls.
 	const int numBranches = 7;
-	int wanderDistance = 2;
-	int numWanders = 4;
+	int wanderDistance = 1;
+	int numWanders = 20;
 
 	FVector endPoints[numBranches];
 
 	for (int i = 0; i < numBranches; i++) {
 		FVector randomPoint;
+		int startDir;
 		int prevDir; // 0 = LEFT, 1 = UP, 2 = RIGHT, 3 = DOWN
 		if (FMath::RandBool()) {
 			randomPoint = FVector(FMath::RandRange(2, numRows - 3), 1, 0);
+			startDir = 2;
 			prevDir = 2;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.Y += 1;
@@ -109,6 +117,7 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 		}
 		else if (FMath::RandBool()) {
 			randomPoint = FVector(1, FMath::RandRange(2, numCols / 2 - 3), 0);
+			startDir = 1;
 			prevDir = 1;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.X += 1;
@@ -118,6 +127,7 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 		}
 		else {
 			randomPoint = FVector(numRows - 2, FMath::RandRange(2, numCols / 2 - 3), 0);
+			startDir = 3;
 			prevDir = 3;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.X -= 1;
@@ -129,10 +139,11 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 		for (int j = 0; j < numWanders; j++) {
 			switch (prevDir) {
 				case 0:
-					if (FMath::RandBool()) {
+					if (startDir != 2 && FMath::RandBool()) {
 						prevDir = 0;
 						for (int k = 0; k < wanderDistance; k++) {
 							randomPoint.Y -= 1;
+
 							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
 								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
@@ -173,7 +184,7 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 					}
 					break;
 				case 1:
-					if (FMath::RandBool()) {
+					if (startDir != 3 && FMath::RandBool()) {
 						prevDir = 1;
 						for (int k = 0; k < wanderDistance; k++) {
 							randomPoint.X += 1;
@@ -261,7 +272,7 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 					}
 					break;
 				case 3:
-					if (FMath::RandBool()) {
+					if (startDir != 1 && FMath::RandBool()) {
 						prevDir = 3;
 						for (int k = 0; k < wanderDistance; k++) {
 							randomPoint.X -= 1;
@@ -308,25 +319,25 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 		}
 	}
 
-	for (int i = 0; i < numBranches; i++) {
-		for (int row = 2; row < numRows - 2; row++) {
-			if (endPoints[i].Y < numCols / 2 - 4 || !(row > numRows / 2 - 3 && row < numRows / 2 + 1)) {
-				if (level[row][(int)endPoints[i].Y] == nullptr) {
-					level[row][(int)endPoints[i].Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-					level[row][(int)endPoints[i].Y]->SetActorLocation(FVector(endPoints[i].Y * 100, row * 100, 200));
-				}
-			}
-		}
+	//for (int i = 0; i < numBranches; i++) {
+	//	for (int row = 2; row < numRows - 2; row++) {
+	//		if (endPoints[i].Y < numCols / 2 - 4 || !(row > numRows / 2 - 3 && row < numRows / 2 + 1)) {
+	//			if (level[row][(int)endPoints[i].Y] == nullptr) {
+	//				level[row][(int)endPoints[i].Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+	//				level[row][(int)endPoints[i].Y]->SetActorLocation(FVector(endPoints[i].Y * 100, row * 100, 200));
+	//			}
+	//		}
+	//	}
 
-		for (int col = 2; col < numCols / 2; col++) {
-			if (!(endPoints[i].X > numRows / 2 - 3 && endPoints[i].X < numRows / 2 + 1) || col < numCols / 2 - 4) {
-				if (level[(int)endPoints[i].X][col] == nullptr) {
-					level[(int)endPoints[i].X][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-					level[(int)endPoints[i].X][col]->SetActorLocation(FVector(col * 100, endPoints[i].X * 100, 200));
-				}
-			}
-		}
-	}
+	//	for (int col = 2; col < numCols / 2; col++) {
+	//		if (!(endPoints[i].X > numRows / 2 - 3 && endPoints[i].X < numRows / 2 + 1) || col < numCols / 2 - 4) {
+	//			if (level[(int)endPoints[i].X][col] == nullptr) {
+	//				level[(int)endPoints[i].X][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+	//				level[(int)endPoints[i].X][col]->SetActorLocation(FVector(col * 100, endPoints[i].X * 100, 200));
+	//			}
+	//		}
+	//	}
+	//}
 
 	// Search level for any cell with 3 surrounding walls
 		// Dig in the direction of the wall opposite the opening until an edge or opening is found.
