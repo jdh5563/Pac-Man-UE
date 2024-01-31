@@ -38,15 +38,16 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 		level[0][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		level[0][col]->SetActorLabel(TEXT("Wall"));
 
-		level[1][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-		level[1][col]->SetActorLocation(FVector(col * 100, 100, 200));
-
 		level[numRows - 1][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, (numRows - 1) * 100, 200), FRotator());
 		level[numRows - 1][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		level[numRows - 1][col]->SetActorLabel(TEXT("Wall"));
 
-		level[numRows - 2][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-		level[numRows - 2][col]->SetActorLocation(FVector(col * 100, (numRows - 2) * 100, 200));
+		if (col != 0) {
+			level[1][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+			level[1][col]->SetActorLocation(FVector(col * 100, 100, 200));
+			level[numRows - 2][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+			level[numRows - 2][col]->SetActorLocation(FVector(col * 100, (numRows - 2) * 100, 200));
+		}
 	}
 
 	for (int row = 1; row < numRows - 1; row++) {
@@ -89,36 +90,243 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 			// From each path's endpoint, extend the path out vertically and horizontally.
 			// All other spaces are walls.
 	const int numBranches = 7;
-	int wanderDistance = 4;
+	int wanderDistance = 2;
 	int numWanders = 4;
 
 	FVector endPoints[numBranches];
 
 	for (int i = 0; i < numBranches; i++) {
 		FVector randomPoint;
+		int prevDir; // 0 = LEFT, 1 = UP, 2 = RIGHT, 3 = DOWN
 		if (FMath::RandBool()) {
-			randomPoint = FVector(FMath::RandRange(2, numRows - 3), 2, 0);
+			randomPoint = FVector(FMath::RandRange(2, numRows - 3), 1, 0);
+			prevDir = 2;
 			for (int j = 0; j < wanderDistance; j++) {
-				level[(int)randomPoint.X][(int)randomPoint.Y + j] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-				level[(int)randomPoint.X][(int)randomPoint.Y + j]->SetActorLocation(FVector((randomPoint.Y + j) * 100, randomPoint.X * 100, 200));
+				randomPoint.Y += 1;
+				level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+				level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
 			}
 		}
 		else if (FMath::RandBool()) {
-			randomPoint = FVector(2, FMath::RandRange(2, numCols / 2 - 3), 0);
+			randomPoint = FVector(1, FMath::RandRange(2, numCols / 2 - 3), 0);
+			prevDir = 1;
 			for (int j = 0; j < wanderDistance; j++) {
-				level[(int)randomPoint.X + j][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-				level[(int)randomPoint.X + j][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, (randomPoint.X + j) * 100, 200));
+				randomPoint.X += 1;
+				level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+				level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
 			}
 		}
 		else {
-			randomPoint = FVector(numRows - 3, FMath::RandRange(2, numCols / 2 - 3), 0);
+			randomPoint = FVector(numRows - 2, FMath::RandRange(2, numCols / 2 - 3), 0);
+			prevDir = 3;
 			for (int j = 0; j < wanderDistance; j++) {
-				level[(int)randomPoint.X - j][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-				level[(int)randomPoint.X - j][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, (randomPoint.X - j) * 100, 200));
+				randomPoint.X -= 1;
+				level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+				level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+			}
+		}
+
+		for (int j = 0; j < numWanders; j++) {
+			switch (prevDir) {
+				case 0:
+					if (FMath::RandBool()) {
+						prevDir = 0;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.Y -= 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.Y += 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					else if (FMath::RandBool()) {
+						prevDir = 1;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.X += 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.X -= 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					else {
+						prevDir = 3;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.X -= 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.X += 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					break;
+				case 1:
+					if (FMath::RandBool()) {
+						prevDir = 1;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.X += 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.X -= 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					else if (FMath::RandBool()) {
+						prevDir = 0;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.Y -= 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.Y += 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					else {
+						prevDir = 2;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.Y += 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.Y -= 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					break;
+				case 2:
+					if (FMath::RandBool()) {
+						prevDir = 2;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.Y += 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.Y -= 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					else if (FMath::RandBool()) {
+						prevDir = 1;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.X += 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.X -= 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					else {
+						prevDir = 3;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.X -= 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.X += 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					break;
+				case 3:
+					if (FMath::RandBool()) {
+						prevDir = 3;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.X -= 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.X += 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					else if (FMath::RandBool()) {
+						prevDir = 0;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.Y -= 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.Y += 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					else {
+						prevDir = 2;
+						for (int k = 0; k < wanderDistance; k++) {
+							randomPoint.Y += 1;
+							if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
+								level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+								level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+							}
+							else {
+								randomPoint.Y -= 1;
+								endPoints[i] = randomPoint;
+							}
+						}
+					}
+					break;
 			}
 		}
 	}
 
+	for (int i = 0; i < numBranches; i++) {
+		for (int row = 2; row < numRows - 2; row++) {
+			if (endPoints[i].Y < numCols / 2 - 4 || !(row > numRows / 2 - 3 && row < numRows / 2 + 1)) {
+				if (level[row][(int)endPoints[i].Y] == nullptr) {
+					level[row][(int)endPoints[i].Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+					level[row][(int)endPoints[i].Y]->SetActorLocation(FVector(endPoints[i].Y * 100, row * 100, 200));
+				}
+			}
+		}
+
+		for (int col = 2; col < numCols / 2; col++) {
+			if (!(endPoints[i].X > numRows / 2 - 3 && endPoints[i].X < numRows / 2 + 1) || col < numCols / 2 - 4) {
+				if (level[(int)endPoints[i].X][col] == nullptr) {
+					level[(int)endPoints[i].X][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+					level[(int)endPoints[i].X][col]->SetActorLocation(FVector(col * 100, endPoints[i].X * 100, 200));
+				}
+			}
+		}
+	}
 
 	// Search level for any cell with 3 surrounding walls
 		// Dig in the direction of the wall opposite the opening until an edge or opening is found.
