@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Engine/StaticMeshActor.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "LevelGenerator.generated.h"
@@ -27,8 +28,32 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
 
+	UPROPERTY(EditInstanceOnly)
+	int numBranches = 8;
+
+	UPROPERTY(EditInstanceOnly)
+	int wanderDistance = 7;
+
+	UPROPERTY(EditInstanceOnly)
+	int numWanders = 3;
+
 	const static int numRows = 31;
 	const static int numCols = 28;
+
+	bool IsPelletSurrounded(AStaticMeshActor* level[numRows][numCols], int row, int col);
+
+	// 0 = NOT DEAD END, 1 = LEFT, 2 = UP, 3 = RIGHT, 4 = DOWN, 5 = LEFT + UP
+	int IsDeadEnd(AStaticMeshActor* level[numRows][numCols], int row, int col);
+
+	void FillEmptySpace(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
+
+	void CullWallsAndPellets(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
+
+	void BuildLevelOutline(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
+
+	bool TryWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int row, int col);
+
+	void HandlePelletWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint);
 
 	//std::vector<bool[]> levels;
 };
