@@ -24,7 +24,7 @@ void ALevelGenerator::Tick(float DeltaTime)
 
 }
 
-void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP)
+void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP)
 {
 	// True means there is a wall in that cell
 	AStaticMeshActor* level[numRows][numCols]{};
@@ -32,7 +32,7 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 	// Only look at first half of columns in the level array
 	// Spawn walls around entire edge. Walls have X% chance to move inward by 1-3 pellets and span 5-10 pellets.
 	// Iteration #1: Just walls around the edge
-	BuildLevelOutline(level, cubeMesh, pelletBP);
+	BuildLevelOutline(level, cubeMesh, pelletBP, powerPelletBP);
 
 	// Spawn inner walls
 		// Design 5:
@@ -96,7 +96,7 @@ void ALevelGenerator::GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> p
 				// Create a tunnel at that edge. Increment number of tunnels.
 
 	CullWallsAndPellets(level, cubeMesh, pelletBP);
-	FillEmptySpace(level, cubeMesh, pelletBP);
+	FillEmptySpace(level, cubeMesh, pelletBP, powerPelletBP);
 }
 
 void ALevelGenerator::HandlePelletWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint)
@@ -258,7 +258,7 @@ bool ALevelGenerator::TryWander(AStaticMeshActor* level[numRows][numCols], TSubc
 	return false;
 }
 
-void ALevelGenerator::BuildLevelOutline(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP) {
+void ALevelGenerator::BuildLevelOutline(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP) {
 	for (int col = 0; col < numCols / 2; col++) {
 		level[0][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, 0, 200), FRotator(0, 0, 0));
 		level[0][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
@@ -281,8 +281,15 @@ void ALevelGenerator::BuildLevelOutline(AStaticMeshActor* level[numRows][numCols
 		level[row][0]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 		level[row][0]->SetActorLabel(TEXT("Wall"));
 
-		level[row][1] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-		level[row][1]->SetActorLocation(FVector(100, row * 100, 200));
+		if (row != 1 && row != numRows - 2) {
+			level[row][1] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+			level[row][1]->SetActorLocation(FVector(100, row * 100, 200));
+		}
+		else {
+			level[row][1] = (AStaticMeshActor*)GetWorld()->SpawnActor(powerPelletBP.Get());
+			level[row][1]->SetActorLocation(FVector(100, row * 100, 200));
+			level[row][1]->SetActorLabel(TEXT("PowerPellet"));
+		}
 
 		if (row > numRows / 2 - 3 && row < numRows / 2 + 1) {
 			level[row][numCols / 2 - 4] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector((numCols / 2 - 4) * 100, row * 100, 200), FRotator(0, 0, 0));
@@ -392,7 +399,7 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 	}
 }
 
-void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP) {
+void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP) {
 	for (int row = 0; row < numRows; row++) {
 		for (int col = numCols / 2; col < numCols; col++) {
 			level[row][col] = level[row][numCols - col - 1];
@@ -402,6 +409,11 @@ void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], 
 					level[row][col] = GetWorld()->SpawnActor<AStaticMeshActor>(FVector(col * 100, row * 100, 200), FRotator(0, 0, 0));
 					level[row][col]->GetStaticMeshComponent()->SetStaticMesh(cubeMesh);
 					level[row][col]->SetActorLabel(TEXT("Wall"));
+				}
+				else if (level[row][numCols - col - 1]->GetActorLabel() == TEXT("PowerPellet")) {
+					level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(powerPelletBP.Get());
+					level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
+					level[row][col]->SetActorLabel(TEXT("PowerPellet"));
 				}
 				else {
 					level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());

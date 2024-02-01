@@ -26,7 +26,7 @@ public:
 
 private:
 	UFUNCTION(BlueprintCallable)
-	void GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
+	void GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
 
 	UPROPERTY(EditInstanceOnly)
 	int numBranches = 8;
@@ -45,11 +45,11 @@ private:
 	// 0 = NOT DEAD END, 1 = LEFT, 2 = UP, 3 = RIGHT, 4 = DOWN, 5 = LEFT + UP
 	int IsDeadEnd(AStaticMeshActor* level[numRows][numCols], int row, int col);
 
-	void FillEmptySpace(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
+	void FillEmptySpace(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
 
 	void CullWallsAndPellets(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
 
-	void BuildLevelOutline(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
+	void BuildLevelOutline(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
 
 	bool TryWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int row, int col);
 
