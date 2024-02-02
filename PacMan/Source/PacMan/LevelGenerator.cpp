@@ -24,9 +24,19 @@ void ALevelGenerator::Tick(float DeltaTime)
 
 }
 
-void ALevelGenerator::ToggleLevelHidden(int index, bool isHidden) {
+void ALevelGenerator::ToggleLevelActive(int index, bool isActive) {
 	for (int i = 0; i < levels[index].size(); i++) {
-		levels[index][i]->SetActorHiddenInGame(isHidden);
+		if (levels[index][i] != nullptr) {
+			levels[index][i]->SetActorHiddenInGame(!isActive);
+			levels[index][i]->SetActorEnableCollision(isActive);
+			levels[index][i]->SetActorTickEnabled(isActive);
+		}
+	}
+}
+
+void ALevelGenerator::DuplicateLevel(int index) {
+	for (int i = 0; i < levels[index].size(); i++) {
+
 	}
 }
 
@@ -57,8 +67,10 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 			prevDir = 3;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.X -= 1;
-				level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-				level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+				if (level[(int)randomPoint.X][(int)randomPoint.Y] != nullptr) {
+					level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+					level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+				}
 			}
 		}
 		else if (i < numBranches / 2) {
@@ -67,8 +79,10 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 			prevDir = 2;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.Y += 1;
-				level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-				level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+				if (level[(int)randomPoint.X][(int)randomPoint.Y] != nullptr) {
+					level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+					level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+				}
 			}
 		}
 		else if (i < numBranches * 3 / 4) {
@@ -77,8 +91,10 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 			prevDir = 2;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.Y += 1;
-				level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-				level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+				if (level[(int)randomPoint.X][(int)randomPoint.Y] != nullptr) {
+					level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+					level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+				}
 			}
 		}
 		else {
@@ -87,8 +103,10 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 			prevDir = 1;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.X += 1;
-				level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
-				level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+				if (level[(int)randomPoint.X][(int)randomPoint.Y] != nullptr) {
+					level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
+					level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
+				}
 			}
 		}
 
@@ -274,7 +292,7 @@ void ALevelGenerator::BuildLevelOutline(AStaticMeshActor* level[numRows][numCols
 		level[numRows - 1][col]->SetActorLocation(FVector(col * 100, (numRows - 1) * 100, 200));
 		level[numRows - 1][col]->SetActorLabel(TEXT("Wall"));
 
-		if (col != 0) {
+		if (col > 1) {
 			level[1][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 			level[1][col]->SetActorLocation(FVector(col * 100, 100, 200));
 			level[numRows - 2][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
@@ -406,6 +424,8 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 }
 
 void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP) {
+	levels.push_back(std::vector<AStaticMeshActor*>());
+
 	for (int row = 0; row < numRows; row++) {
 		for (int col = numCols / 2; col < numCols; col++) {
 			level[row][col] = level[row][numCols - col - 1];
@@ -426,19 +446,16 @@ void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], 
 					level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
 				}
 			}
-			else {
-				if (!(numCols - col - 1 < numCols / 2 && numCols - col - 1 > numCols / 2 - 5 && row < numRows / 2 + 2 && row > numRows / 2 - 4)) {
-					level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
-					level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
-					level[row][col]->SetActorLabel(TEXT("Wall"));
+			else if (!(numCols - col - 1 < numCols / 2 && numCols - col - 1 > numCols / 2 - 5 && row < numRows / 2 + 2 && row > numRows / 2 - 4)) {
+				level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
+				level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
+				level[row][col]->SetActorLabel(TEXT("Wall"));
 
-					level[row][numCols - col - 1] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
-					level[row][numCols - col - 1]->SetActorLocation(FVector((numCols - col - 1) * 100, row * 100, 200));
-					level[row][numCols - col - 1]->SetActorLabel(TEXT("Wall"));
-				}
+				level[row][numCols - col - 1] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
+				level[row][numCols - col - 1]->SetActorLocation(FVector((numCols - col - 1) * 100, row * 100, 200));
+				level[row][numCols - col - 1]->SetActorLabel(TEXT("Wall"));
 			}
 
-			levels.push_back(std::vector<AStaticMeshActor*>());
 			levels[levels.size() - 1].push_back(level[row][numCols - col - 1]);
 			levels[levels.size() - 1].push_back(level[row][col]);
 		}

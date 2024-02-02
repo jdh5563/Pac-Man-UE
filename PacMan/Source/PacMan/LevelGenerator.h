@@ -41,7 +41,10 @@ private:
 	void GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
 
 	UFUNCTION(BlueprintCallable)
-	void ToggleLevelHidden(int index, bool isHidden);
+	void DuplicateLevel(int index);
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleLevelActive(int index, bool isActive);
 
 	bool IsPelletSurrounded(AStaticMeshActor* level[numRows][numCols], int row, int col);
 
