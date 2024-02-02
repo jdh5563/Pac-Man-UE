@@ -67,7 +67,7 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 			prevDir = 3;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.X -= 1;
-				if (level[(int)randomPoint.X][(int)randomPoint.Y] != nullptr) {
+				if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
 					level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 					level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
 				}
@@ -83,7 +83,7 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 			prevDir = 2;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.Y += 1;
-				if (level[(int)randomPoint.X][(int)randomPoint.Y] != nullptr) {
+				if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
 					level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 					level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
 				}
@@ -99,7 +99,7 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 			prevDir = 2;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.Y += 1;
-				if (level[(int)randomPoint.X][(int)randomPoint.Y] != nullptr) {
+				if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
 					level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 					level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
 				}
@@ -115,7 +115,7 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 			prevDir = 1;
 			for (int j = 0; j < wanderDistance; j++) {
 				randomPoint.X += 1;
-				if (level[(int)randomPoint.X][(int)randomPoint.Y] != nullptr) {
+				if (level[(int)randomPoint.X][(int)randomPoint.Y] == nullptr) {
 					level[(int)randomPoint.X][(int)randomPoint.Y] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 					level[(int)randomPoint.X][(int)randomPoint.Y]->SetActorLocation(FVector(randomPoint.Y * 100, randomPoint.X * 100, 200));
 				}
