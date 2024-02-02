@@ -25,9 +25,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	UFUNCTION(BlueprintCallable)
-	void GenerateLevel(UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
-
 	UPROPERTY(EditInstanceOnly)
 	int numBranches = 8;
 
@@ -40,20 +37,26 @@ private:
 	const static int numRows = 31;
 	const static int numCols = 28;
 
+	UFUNCTION(BlueprintCallable)
+	void GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleLevelHidden(int index, bool isHidden);
+
 	bool IsPelletSurrounded(AStaticMeshActor* level[numRows][numCols], int row, int col);
 
 	// 0 = NOT DEAD END, 1 = LEFT, 2 = UP, 3 = RIGHT, 4 = DOWN, 5 = LEFT + UP
 	int IsDeadEnd(AStaticMeshActor* level[numRows][numCols], int row, int col);
 
-	void FillEmptySpace(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
+	void FillEmptySpace(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
 
-	void CullWallsAndPellets(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP);
+	void CullWallsAndPellets(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP);
 
-	void BuildLevelOutline(AStaticMeshActor* level[numRows][numCols], UStaticMesh* cubeMesh, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
+	void BuildLevelOutline(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
 
 	bool TryWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int row, int col);
 
 	void HandlePelletWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint);
 
-	//std::vector<bool[]> levels;
+	std::vector<AStaticMeshActor* [numRows][numCols]> levels;
 };
