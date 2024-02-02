@@ -25,10 +25,8 @@ void ALevelGenerator::Tick(float DeltaTime)
 }
 
 void ALevelGenerator::ToggleLevelHidden(int index, bool isHidden) {
-	for (int row = 0; row < numRows; row++) {
-		for (int col = 0; col < numCols; col++) {
-			levels[index][row][col]->SetActorHiddenInGame(isHidden);
-		}
+	for (int i = 0; i < levels[index].size(); i++) {
+		levels[index][i]->SetActorHiddenInGame(isHidden);
 	}
 }
 
@@ -105,8 +103,6 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 
 	CullWallsAndPellets(level, wall, pelletBP);
 	FillEmptySpace(level, wall, pelletBP, powerPelletBP);
-
-	//levels.push_back(level);
 }
 
 void ALevelGenerator::HandlePelletWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint)
@@ -441,6 +437,10 @@ void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], 
 					level[row][numCols - col - 1]->SetActorLabel(TEXT("Wall"));
 				}
 			}
+
+			levels.push_back(std::vector<AStaticMeshActor*>());
+			levels[levels.size() - 1].push_back(level[row][numCols - col - 1]);
+			levels[levels.size() - 1].push_back(level[row][col]);
 		}
 	}
 }

@@ -58,5 +58,5 @@ private:
 
 	void HandlePelletWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint);
 
-	std::vector<AStaticMeshActor* [numRows][numCols]> levels;
+	std::vector<std::vector<AStaticMeshActor*>> levels;
 };
