@@ -40,7 +40,7 @@ void ALevelGenerator::DuplicateLevel(int index) {
 	}
 }
 
-void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP)
+void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> blinkyBP, TSubclassOf<AActor> inkyBP, TSubclassOf<AActor> pinkyBP, TSubclassOf<AActor> clydeBP)
 {
 	// True means there is a wall in that cell
 	AStaticMeshActor* level[numRows][numCols]{};
@@ -137,6 +137,8 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 
 	CullWallsAndPellets(level, wall, pelletBP);
 	FillEmptySpace(level, wall, pelletBP, powerPelletBP);
+
+	//GetWorld()->SpawnActor(blinkyBP.Get())->SetActorLocation(FVector(1400, 1100, 200));
 }
 
 void ALevelGenerator::HandlePelletWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint)

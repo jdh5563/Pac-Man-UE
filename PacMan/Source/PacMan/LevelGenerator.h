@@ -38,7 +38,7 @@ private:
 	const static int numCols = 28;
 
 	UFUNCTION(BlueprintCallable)
-	void GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
+	void GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> blinkyBP, TSubclassOf<AActor> inkyBP, TSubclassOf<AActor> pinkyBP, TSubclassOf<AActor> clydeBP);
 
 	UFUNCTION(BlueprintCallable)
 	void DuplicateLevel(int index);
