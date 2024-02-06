@@ -40,7 +40,7 @@ void ALevelGenerator::DuplicateLevel(int index) {
 	}
 }
 
-void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> blinkyBP, TSubclassOf<AActor> inkyBP, TSubclassOf<AActor> pinkyBP, TSubclassOf<AActor> clydeBP)
+void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP, TSubclassOf<AActor> blinkyBP, TSubclassOf<AActor> inkyBP, TSubclassOf<AActor> pinkyBP, TSubclassOf<AActor> clydeBP)
 {
 	// True means there is a wall in that cell
 	AStaticMeshActor* level[numRows][numCols]{};
@@ -136,7 +136,7 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 				// Create a tunnel at that edge. Increment number of tunnels.
 
 	CullWallsAndPellets(level, wall, pelletBP);
-	FillEmptySpace(level, wall, pelletBP, powerPelletBP);
+	FillEmptySpace(level, wall, pelletBP, powerPelletBP, teleportBP);
 
 	//GetWorld()->SpawnActor(blinkyBP.Get())->SetActorLocation(FVector(1400, 1100, 200));
 }
@@ -304,11 +304,9 @@ void ALevelGenerator::BuildLevelOutline(AStaticMeshActor* level[numRows][numCols
 	for (int col = 0; col < numCols / 2; col++) {
 		level[0][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 		level[0][col]->SetActorLocation(FVector(col * 100, 0, 200));
-		level[0][col]->SetActorLabel(TEXT("Wall"));
 
 		level[numRows - 1][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 		level[numRows - 1][col]->SetActorLocation(FVector(col * 100, (numRows - 1) * 100, 200));
-		level[numRows - 1][col]->SetActorLabel(TEXT("Wall"));
 
 		if (col > 1) {
 			level[1][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
@@ -321,7 +319,6 @@ void ALevelGenerator::BuildLevelOutline(AStaticMeshActor* level[numRows][numCols
 	for (int row = 1; row < numRows - 1; row++) {
 		level[row][0] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 		level[row][0]->SetActorLocation(FVector(0, row * 100, 200));
-		level[row][0]->SetActorLabel(TEXT("Wall"));
 
 		if (row != 1 && row != numRows - 2) {
 			level[row][1] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
@@ -330,13 +327,11 @@ void ALevelGenerator::BuildLevelOutline(AStaticMeshActor* level[numRows][numCols
 		else {
 			level[row][1] = (AStaticMeshActor*)GetWorld()->SpawnActor(powerPelletBP.Get());
 			level[row][1]->SetActorLocation(FVector(100, row * 100, 200));
-			level[row][1]->SetActorLabel(TEXT("PowerPellet"));
 		}
 
 		if (row > numRows / 2 - 3 && row < numRows / 2 + 1) {
 			level[row][numCols / 2 - 4] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 			level[row][numCols / 2 - 4]->SetActorLocation(FVector((numCols / 2 - 4) * 100, row * 100, 200));
-			level[row][numCols / 2 - 4]->SetActorLabel(TEXT("Wall"));
 
 			level[row][numCols / 2 - 5] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 			level[row][numCols / 2 - 5]->SetActorLocation(FVector((numCols / 2 - 5) * 100, row * 100, 200));
@@ -352,12 +347,10 @@ void ALevelGenerator::BuildLevelOutline(AStaticMeshActor* level[numRows][numCols
 	for (int col = numCols / 2 - 1; col > numCols / 2 - 5; col--) {
 		level[numRows / 2 + 1][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 		level[numRows / 2 + 1][col]->SetActorLocation(FVector(col * 100, (numRows / 2 + 1) * 100, 200));
-		level[numRows / 2 + 1][col]->SetActorLabel(TEXT("Wall"));
 
 		if (col != numCols / 2 - 1) {
 			level[numRows / 2 - 3][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 			level[numRows / 2 - 3][col]->SetActorLocation(FVector(col * 100, (numRows / 2 - 3) * 100, 200));
-			level[numRows / 2 - 3][col]->SetActorLabel(TEXT("Wall"));
 		}
 	}
 
@@ -387,7 +380,7 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 							level[row][i] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 							level[row][i]->SetActorLocation(FVector(i * 100, row * 100, 200));
 
-							if (level[row][i - 1] != nullptr && level[row][i - 1]->GetActorLabel() != TEXT("Wall")) break;
+							if (level[row][i - 1] != nullptr && !level[row][i - 1]->Tags.Contains(TEXT("Wall"))) break;
 						}
 						break;
 					case 2:
@@ -396,7 +389,7 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 							level[i][numCols - col - 1] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 							level[i][numCols - col - 1]->SetActorLocation(FVector((numCols - col - 1) * 100, i * 100, 200));
 
-							if (level[i - 1][numCols - col - 1] != nullptr && level[i - 1][numCols - col - 1]->GetActorLabel() != TEXT("Wall")) break;
+							if (level[i - 1][numCols - col - 1] != nullptr && !level[i - 1][numCols - col - 1]->Tags.Contains(TEXT("Wall"))) break;
 						}
 						break;
 					case 3:
@@ -405,7 +398,7 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 							level[row][i] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 							level[row][i]->SetActorLocation(FVector(i * 100, row * 100, 200));
 
-							if (level[row][i + 1] != nullptr && level[row][i + 1]->GetActorLabel() != TEXT("Wall")) break;
+							if (level[row][i + 1] != nullptr && !level[row][i + 1]->Tags.Contains(TEXT("Wall"))) break;
 						}
 						break;
 					case 4:
@@ -414,7 +407,7 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 							level[i][numCols - col - 1] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 							level[i][numCols - col - 1]->SetActorLocation(FVector((numCols - col - 1) * 100, i * 100, 200));
 
-							if (level[i + 1][numCols - col - 1] != nullptr && level[i + 1][numCols - col - 1]->GetActorLabel() != TEXT("Wall")) break;
+							if (level[i + 1][numCols - col - 1] != nullptr && !level[i + 1][numCols - col - 1]->Tags.Contains(TEXT("Wall"))) break;
 						}
 						break;
 					case 5:
@@ -423,7 +416,7 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 							level[row][i] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 							level[row][i]->SetActorLocation(FVector(i * 100, row * 100, 200));
 
-							if (level[row][i - 1] != nullptr && level[row][i - 1]->GetActorLabel() != TEXT("Wall")) break;
+							if (level[row][i - 1] != nullptr && !level[row][i - 1]->Tags.Contains(TEXT("Wall"))) break;
 						}
 
 						for (int i = row - 1; i > 1; i--) {
@@ -431,7 +424,7 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 							level[i][numCols - col - 1] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
 							level[i][numCols - col - 1]->SetActorLocation(FVector((numCols - col - 1) * 100, i * 100, 200));
 
-							if (level[i - 1][numCols - col - 1] != nullptr && level[i - 1][numCols - col - 1]->GetActorLabel() != TEXT("Wall")) break;
+							if (level[i - 1][numCols - col - 1] != nullptr && !level[i - 1][numCols - col - 1]->Tags.Contains(TEXT("Wall"))) break;
 						}
 						break;
 					}
@@ -441,23 +434,60 @@ void ALevelGenerator::CullWallsAndPellets(AStaticMeshActor* level[numRows][numCo
 	}
 }
 
-void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP) {
+void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP) {
 	levels.push_back(std::vector<AStaticMeshActor*>());
 
+	int tunnel1Index = FMath::RandRange(1, numRows - 2);
+	int tunnel2Index = FMath::RandRange(1, numRows - 2);
+	while (FMath::Abs(tunnel2Index - tunnel1Index) < 2) {
+		tunnel2Index = FMath::RandRange(1, numRows - 2);
+	}
+
 	for (int row = 0; row < numRows; row++) {
+		if (row == tunnel1Index || row == tunnel2Index) {
+			level[row][0]->Destroy();
+			level[row][0] = nullptr;
+
+			for (int i = 1; i < 3; i++) {
+				// Left-side teleporter
+				AStaticMeshActor* hallway = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
+				hallway->SetActorLocation(FVector(-i * 100, (row + 1) * 100, 200));
+				levels[levels.size() - 1].push_back(hallway);
+
+				hallway = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
+				hallway->SetActorLocation(FVector(-i * 100, (row - 1) * 100, 200));
+				levels[levels.size() - 1].push_back(hallway);
+
+				// Right-side teleporter
+				hallway = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
+				hallway->SetActorLocation(FVector((numCols - 1 + i) * 100, (row + 1) * 100, 200));
+				levels[levels.size() - 1].push_back(hallway);
+
+				hallway = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
+				hallway->SetActorLocation(FVector((numCols - 1 + i) * 100, (row - 1) * 100, 200));
+				levels[levels.size() - 1].push_back(hallway);
+			}
+
+			AStaticMeshActor* teleporter = (AStaticMeshActor*)GetWorld()->SpawnActor(teleportBP.Get());
+			teleporter->SetActorLocation(FVector(- 300, row * 100, 200));
+			levels[levels.size() - 1].push_back(teleporter);
+
+			teleporter = (AStaticMeshActor*)GetWorld()->SpawnActor(teleportBP.Get());
+			teleporter->SetActorLocation(FVector((numCols + 2) * 100, row * 100, 200));
+			levels[levels.size() - 1].push_back(teleporter);
+		}
+
 		for (int col = numCols / 2; col < numCols; col++) {
 			level[row][col] = level[row][numCols - col - 1];
 
 			if (level[row][numCols - col - 1] != nullptr) {
-				if (level[row][numCols - col - 1]->GetActorLabel() == TEXT("Wall")) {
+				if (level[row][numCols - col - 1]->Tags.Contains(TEXT("Wall"))) {
 					level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 					level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
-					level[row][col]->SetActorLabel(TEXT("Wall"));
 				}
-				else if (level[row][numCols - col - 1]->GetActorLabel() == TEXT("PowerPellet")) {
+				else if (level[row][numCols - col - 1]->Tags.Contains(TEXT("PowerPellet"))) {
 					level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(powerPelletBP.Get());
 					level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
-					level[row][col]->SetActorLabel(TEXT("PowerPellet"));
 				}
 				else {
 					level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(pelletBP.Get());
@@ -465,13 +495,13 @@ void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], 
 				}
 			}
 			else if (!(numCols - col - 1 < numCols / 2 && numCols - col - 1 > numCols / 2 - 5 && row < numRows / 2 + 2 && row > numRows / 2 - 4)) {
-				level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
-				level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
-				level[row][col]->SetActorLabel(TEXT("Wall"));
+				if (col != numCols - 1 || (row != tunnel1Index && row != tunnel2Index)) {
+					level[row][col] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
+					level[row][col]->SetActorLocation(FVector(col * 100, row * 100, 200));
 
-				level[row][numCols - col - 1] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
-				level[row][numCols - col - 1]->SetActorLocation(FVector((numCols - col - 1) * 100, row * 100, 200));
-				level[row][numCols - col - 1]->SetActorLabel(TEXT("Wall"));
+					level[row][numCols - col - 1] = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
+					level[row][numCols - col - 1]->SetActorLocation(FVector((numCols - col - 1) * 100, row * 100, 200));
+				}
 			}
 
 			levels[levels.size() - 1].push_back(level[row][numCols - col - 1]);
@@ -483,7 +513,7 @@ void ALevelGenerator::FillEmptySpace(AStaticMeshActor* level[numRows][numCols], 
 bool ALevelGenerator::IsPelletSurrounded(AStaticMeshActor* level[numRows][numCols], int row, int col) {
 	for (int i = row - 1; i < row + 2; i++) {
 		for (int j = col - 1; j < col + 2; j++) {
-			if (level[i][j] == nullptr || level[i][j]->GetActorLabel() == TEXT("Wall")) return false;
+			if (level[i][j] == nullptr || level[i][j]->Tags.Contains(TEXT("Wall"))) return false;
 		}
 	}
 
@@ -496,7 +526,7 @@ int ALevelGenerator::IsDeadEnd(AStaticMeshActor* level[numRows][numCols], int ro
 	for (int i = row - 1; i < row + 2; i++) {
 		for (int j = col - 1; j < col + 2; j++) {
 			if ((i == row || j == col) && (i != row || j != col)) {
-				if (level[i][j] == nullptr || level[i][j]->GetActorLabel() == TEXT("Wall")) numWalls++;
+				if (level[i][j] == nullptr || level[i][j]->Tags.Contains(TEXT("Wall"))) numWalls++;
 				else {
 					if (i == row) {
 						if (j == col - 1) digDir = 3;
