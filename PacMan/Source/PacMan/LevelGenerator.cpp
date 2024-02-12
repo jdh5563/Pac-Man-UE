@@ -40,7 +40,7 @@ void ALevelGenerator::DuplicateLevel(int index) {
 	}
 }
 
-void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP, TSubclassOf<AActor> blinkyBP, TSubclassOf<AActor> inkyBP, TSubclassOf<AActor> pinkyBP, TSubclassOf<AActor> clydeBP)
+void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP)
 {
 	// True means there is a wall in that cell
 	AStaticMeshActor* level[numRows][numCols]{};
