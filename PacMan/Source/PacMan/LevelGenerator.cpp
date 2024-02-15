@@ -35,8 +35,11 @@ void ALevelGenerator::ToggleLevelActive(int index, bool isActive) {
 }
 
 void ALevelGenerator::DuplicateLevel(int index) {
-	for (int i = 0; i < levels[index].size(); i++) {
+	levels.push_back(std::vector<AStaticMeshActor*>());
 
+	for (int i = 0; i < levels[index].size(); i++) {
+		//std::copy(levels[levels.size() - 1], levels[index], levels[index].size());
+		std::copy(levels[index].begin(), levels[index].end(), levels[levels.size() - 1].begin());
 	}
 }
 
@@ -137,8 +140,6 @@ void ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor
 
 	CullWallsAndPellets(level, wall, pelletBP);
 	FillEmptySpace(level, wall, pelletBP, powerPelletBP, teleportBP);
-
-	//GetWorld()->SpawnActor(blinkyBP.Get())->SetActorLocation(FVector(1400, 1100, 200));
 }
 
 void ALevelGenerator::HandlePelletWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint)
