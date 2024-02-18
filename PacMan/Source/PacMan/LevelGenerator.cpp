@@ -45,6 +45,8 @@ void ALevelGenerator::DuplicateLevel(int index) {
 
 TArray<AActor*> ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP)
 {
+	level.Empty();
+
 	// True means there is a wall in that cell
 	for (int i = 0; i < numRows * numCols; i++) {
 		level.Add(nullptr);
