@@ -38,7 +38,7 @@ private:
 	const static int numCols = 22;
 
 	UFUNCTION(BlueprintCallable)
-	TArray<AStaticMeshActor*> GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP);
+	TArray<AActor*> GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP);
 
 	UFUNCTION(BlueprintCallable)
 	void DuplicateLevel(int index);
@@ -61,6 +61,6 @@ private:
 
 	void HandlePelletWander(TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint);
 
-	TArray<AStaticMeshActor*> level = TArray<AStaticMeshActor*>();
+	TArray<AActor*> level = TArray<AActor*>();
 	std::vector<std::vector<AStaticMeshActor*>> levels;
 };

@@ -43,7 +43,7 @@ void ALevelGenerator::DuplicateLevel(int index) {
 	}
 }
 
-TArray<AStaticMeshActor*> ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP)
+TArray<AActor*> ALevelGenerator::GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP)
 {
 	// True means there is a wall in that cell
 	for (int i = 0; i < numRows * numCols; i++) {
@@ -457,29 +457,35 @@ void ALevelGenerator::FillEmptySpace(TSubclassOf<AActor> wall, TSubclassOf<AActo
 				// Left-side teleporter
 				AStaticMeshActor* hallway = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 				hallway->SetActorLocation(FVector(-i * 100, (row + 1) * 100, 200));
+				level.Add(hallway);
 				levels[levels.size() - 1].push_back(hallway);
 
 				hallway = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 				hallway->SetActorLocation(FVector(-i * 100, (row - 1) * 100, 200));
+				level.Add(hallway);
 				levels[levels.size() - 1].push_back(hallway);
 
 				// Right-side teleporter
 				hallway = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 				hallway->SetActorLocation(FVector((numCols - 1 + i) * 100, (row + 1) * 100, 200));
+				level.Add(hallway);
 				levels[levels.size() - 1].push_back(hallway);
 
 				hallway = (AStaticMeshActor*)GetWorld()->SpawnActor(wall.Get());
 				hallway->SetActorLocation(FVector((numCols - 1 + i) * 100, (row - 1) * 100, 200));
+				level.Add(hallway);
 				levels[levels.size() - 1].push_back(hallway);
 			}
 
 			AStaticMeshActor* teleporter = (AStaticMeshActor*)GetWorld()->SpawnActor(teleportBP.Get());
 			teleporter->SetActorLocation(FVector(-300, row * 100, 200));
 			teleporter->Tags.Add(TEXT("Left"));
+			level.Add(teleporter);
 			levels[levels.size() - 1].push_back(teleporter);
 
 			teleporter = (AStaticMeshActor*)GetWorld()->SpawnActor(teleportBP.Get());
 			teleporter->SetActorLocation(FVector((numCols + 2) * 100, row * 100, 200));
+			level.Add(teleporter);
 			levels[levels.size() - 1].push_back(teleporter);
 		}
 
@@ -510,8 +516,8 @@ void ALevelGenerator::FillEmptySpace(TSubclassOf<AActor> wall, TSubclassOf<AActo
 				}
 			}
 
-			levels[levels.size() - 1].push_back(level[numCols * row + (numCols - col - 1)]);
-			levels[levels.size() - 1].push_back(level[numCols * row + col]);
+			//levels[levels.size() - 1].push_back(level[numCols * row + (numCols - col - 1)]);
+			//levels[levels.size() - 1].push_back(level[numCols * row + col]);
 		}
 	}
 }
