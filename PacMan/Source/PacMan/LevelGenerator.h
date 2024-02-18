@@ -38,7 +38,7 @@ private:
 	const static int numCols = 22;
 
 	UFUNCTION(BlueprintCallable)
-	void GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP);
+	TArray<AStaticMeshActor*> GenerateLevel(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP);
 
 	UFUNCTION(BlueprintCallable)
 	void DuplicateLevel(int index);
@@ -46,20 +46,21 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void ToggleLevelActive(int index, bool isActive);
 
-	bool IsPelletSurrounded(AStaticMeshActor* level[numRows][numCols], int row, int col);
+	bool IsPelletSurrounded(int row, int col);
 
 	// 0 = NOT DEAD END, 1 = LEFT, 2 = UP, 3 = RIGHT, 4 = DOWN, 5 = LEFT + UP
-	int IsDeadEnd(AStaticMeshActor* level[numRows][numCols], int row, int col);
+	int IsDeadEnd(int row, int col);
 
-	void FillEmptySpace(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP);
+	void FillEmptySpace(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP, TSubclassOf<AActor> teleportBP);
 
-	void CullWallsAndPellets(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP);
+	void CullWallsAndPellets(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP);
 
-	void BuildLevelOutline(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
+	void BuildLevelOutline(TSubclassOf<AActor> wall, TSubclassOf<AActor> pelletBP, TSubclassOf<AActor> powerPelletBP);
 
-	bool TryWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int row, int col);
+	bool TryWander(TSubclassOf<AActor> pelletBP, int row, int col);
 
-	void HandlePelletWander(AStaticMeshActor* level[numRows][numCols], TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint);
+	void HandlePelletWander(TSubclassOf<AActor> pelletBP, int startDir, int prevDir, FVector randomPoint);
 
+	TArray<AStaticMeshActor*> level = TArray<AStaticMeshActor*>();
 	std::vector<std::vector<AStaticMeshActor*>> levels;
 };
